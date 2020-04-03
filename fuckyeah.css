@@ -49,3 +49,9 @@ a:active {
 	color: red;
 }
 
+img {
+  margin-top: 0px;
+  margin-bottom: -15px;
+  max-width: 18%;
+  max-height: 18%;
+}
