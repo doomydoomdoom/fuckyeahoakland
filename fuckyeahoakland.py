@@ -71,9 +71,6 @@ try:
   sanfrancisco = json.loads(json.load(f))
   f.close()
 
-  pprint(oakland['currently']['temperature'])
-  pprint(sanfrancisco['currently']['temperature'])
-
   try:
     # *THIS* has to be run hourly.
     diff=int(oakland['currently']['temperature']) - int(sanfrancisco['currently']['temperature'])
