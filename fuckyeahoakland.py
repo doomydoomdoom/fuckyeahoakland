@@ -9,7 +9,8 @@ config = {
   'key':'e651fd6cb0ba73daaf9cab6b6c643257',
   'cities':{
     'sanfrancisco':{'lat':37.7337,'lon':-122.4467},
-    'oakland':{'lat':37.2815,'lon':-122.1615}
+    'oakland':{'lat':37.8043,'lon':-122.2711},
+    'nope':{'lat':37.7780,'lon':-122.5004}
   }
 }
 
@@ -20,7 +21,7 @@ if len(list(opts)) > 0:
 
   import http.client
  
-  for city in ('sanfrancisco','oakland'):
+  for city in ('sanfrancisco','oakland','nope'):
     uri = "/forecast/%s/%0.4f,%0.4f" % ( config['key'], config['cities'][city]['lat'], config['cities'][city]['lon'] )
 
     conn = http.client.HTTPSConnection("api.darksky.net")
@@ -71,20 +72,27 @@ try:
   sanfrancisco = json.loads(json.load(f))
   f.close()
 
-  try:
-    # *THIS* has to be run hourly.
-    diff=int(oakland['currently']['temperature']) - int(sanfrancisco['currently']['temperature'])
+  f = open('nope.json','r')
+  nope = json.loads(json.load(f))
+  f.close()
+
+  # *THIS* has to be run hourly.
+  diff=int(oakland['currently']['temperature']) - int(sanfrancisco['currently']['temperature'])
+  delta=abs(diff)
+  # To run daily, calculate an average from city['daily'][0]['temperatureM**'] and TEST THOROUGHLY.
+
+  if diff < 0:
+    #BLATANT CHEATING... cherry-pick the coldest micro-climate
+    diff=int(oakland['currently']['temperature']) - int(nope['currently']['temperature'])
     delta=abs(diff)
 
-    # To run daily, calculate an average from city['daily'][0]['temperatureM**'] and TEST THOROUGHLY.
-    if diff < 0:
-      phrase = "It's currently %u degrees warmer in SF, and I'm a little confused." % delta
-    elif diff > 0:
-      phrase = "You'd be %u degrees warmer if you were in Oakland right now." % delta
-    else:
-      phrase = "It's a tie! (I probably broke something)."
-  except:
-    phrase = "Something is profoundly forked, and someday, if you clap your hands and believe, there will be monitoring in place for it, or a means of contacting the developer in charge. Spoiler: it's not today."
+  if diff < 0:
+    phrase = "It's currently %u degrees warmer in SF, and I'm a little confused." % delta
+  elif diff > 0:
+    phrase = "You'd be %u degrees warmer if you were in Oakland right now." % delta
+  else:
+    phrase = "Either Oakland is abnormally chilly, or I broke the app. It's probably the latter."
+
 except IOError:
   phrase = "Where's my fucking file?"
 except:
@@ -103,8 +111,11 @@ content='''
   <body>
   <h1>%s</h1>
   <h3>
-  [...did I mention <a href="http://maps.google.com/maps/ms?ie=UTF8&hl=en&msa=0&msid=111386974984487942660.00043b9b4dc191c072885&om=0&ll=37.784554,-122.23526&spn=0.086556,0.194664&z=12">TACOS</a>?]
+    [<a href="http://darksky.net/poweredby/"><img src="./static/poweredby-oneline.png"></a>]
   </h3>
+  <h4>
+    [...AND <a href="http://maps.google.com/maps/ms?ie=UTF8&hl=en&msa=0&msid=111386974984487942660.00043b9b4dc191c072885&om=0&ll=37.784554,-122.23526&spn=0.086556,0.194664&z=12">TACOS</a>]
+  </h4>
   </body>
 </html>
 '''
