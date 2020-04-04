@@ -68,32 +68,32 @@ if len(list(opts)) > 0:
       conn.close()
 else:
   try:
-
     f = open('oakland.json','r')
     oakland = json.loads(json.load(f))
     f.close()
+    comment =  "\tOakland: %f" % oakland['currently']['temperature']
 
     f = open('sanfrancisco.json','r')
     sanfrancisco = json.loads(json.load(f))
     f.close()
+    comment += "\n\tSF (Central): %f" % sanfrancisco['currently']['temperature']
 
     f = open('nope.json','r')
     nope = json.loads(json.load(f))
     f.close()
+    comment += "\n\tSF (Outer Richmond): %f" % nope['currently']['temperature']
 
     # *THIS* has to be run hourly.
-    diff=int(oakland['currently']['temperature']) - int(sanfrancisco['currently']['temperature'])
+    diff=round(oakland['currently']['temperature']) - round(sanfrancisco['currently']['temperature'])
     delta=abs(diff)
     # To run daily, calculate an average from city['daily'][0]['temperatureM**'] and TEST THOROUGHLY.
 
-    if diff < 0:
-      #BLATANT CHEATING... cherry-pick the coldest micro-climate
-      diff=int(oakland['currently']['temperature']) - int(nope['currently']['temperature'])
+    if diff < 1:
+      # 'Creative accounting' + cherry-picking micro-climates
+      diff=round(oakland['currently']['temperature']) - int(nope['currently']['temperature'])
       delta=abs(diff)
 
-    if diff < 0:
-      phrase = "It's currently %u degrees warmer in SF, and I'm a little confused." % delta
-    elif diff > 0:
+    if diff >= 1:
       phrase = "You'd be %u degrees warmer if you were in Oakland right now." % delta
     else:
       phrase = "Either Oakland is abnormally chilly, or I broke the app. It's probably the latter."
@@ -115,6 +115,11 @@ else:
   </head>
   <body>
   <h1>%s</h1>
+
+  <!--
+    %s
+  -->
+
   <h3>
     [<a href="http://darksky.net/poweredby/"><img src="./static/poweredby-oneline.png"></a>]
   </h3>
@@ -125,5 +130,5 @@ else:
 </html>
 '''
 
-  print(content % phrase)
+  print(content % (phrase,comment) )
 
