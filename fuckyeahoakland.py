@@ -37,9 +37,10 @@ if len(list(opts)) > 0:
         except:
           print('ERROR: Unparseable JSON')
           pprint(data)
+          quit()
       
         if int(ds_json['currently']['temperature']) > 0:
-          print("SUCCESS! %s = %f" % (city,ds_json['currently']['temperature']))
+          #print("SUCCESS: %s = %f" % (city,ds_json['currently']['temperature']))
           try:
             type(ds_json)
             f = open('%s.json' % city,'w')
@@ -50,56 +51,60 @@ if len(list(opts)) > 0:
             print("ERROR:")
             e = sys.exc_info()[0]
             print(e)
+            quit()
         else:
           print('ERROR: Bad JSON')
           pprint(ds_json['currently'])
+          quit()
       else:
         print('Bad Response: %i' % resp.status())
         pprint(data)
+        quit()
     except:
         print('Failed Response: %i' % resp.status)
         pprint(resp)
+        quit()
     finally:
       conn.close()
+else:
+  try:
 
-try:
+    f = open('oakland.json','r')
+    oakland = json.loads(json.load(f))
+    f.close()
 
-  f = open('oakland.json','r')
-  oakland = json.loads(json.load(f))
-  f.close()
+    f = open('sanfrancisco.json','r')
+    sanfrancisco = json.loads(json.load(f))
+    f.close()
 
-  f = open('sanfrancisco.json','r')
-  sanfrancisco = json.loads(json.load(f))
-  f.close()
+    f = open('nope.json','r')
+    nope = json.loads(json.load(f))
+    f.close()
 
-  f = open('nope.json','r')
-  nope = json.loads(json.load(f))
-  f.close()
-
-  # *THIS* has to be run hourly.
-  diff=int(oakland['currently']['temperature']) - int(sanfrancisco['currently']['temperature'])
-  delta=abs(diff)
-  # To run daily, calculate an average from city['daily'][0]['temperatureM**'] and TEST THOROUGHLY.
-
-  if diff < 0:
-    #BLATANT CHEATING... cherry-pick the coldest micro-climate
-    diff=int(oakland['currently']['temperature']) - int(nope['currently']['temperature'])
+    # *THIS* has to be run hourly.
+    diff=int(oakland['currently']['temperature']) - int(sanfrancisco['currently']['temperature'])
     delta=abs(diff)
+    # To run daily, calculate an average from city['daily'][0]['temperatureM**'] and TEST THOROUGHLY.
 
-  if diff < 0:
-    phrase = "It's currently %u degrees warmer in SF, and I'm a little confused." % delta
-  elif diff > 0:
-    phrase = "You'd be %u degrees warmer if you were in Oakland right now." % delta
-  else:
-    phrase = "Either Oakland is abnormally chilly, or I broke the app. It's probably the latter."
+    if diff < 0:
+      #BLATANT CHEATING... cherry-pick the coldest micro-climate
+      diff=int(oakland['currently']['temperature']) - int(nope['currently']['temperature'])
+      delta=abs(diff)
 
-except IOError:
-  phrase = "Where's my fucking file?"
-except:
-  e = sys.exc_info()[0]
-  phrase = "I sincerely have no idea what's going on, but technically my SLA is 'Whenever I f*cking feel like it', so: %s" % e
+    if diff < 0:
+      phrase = "It's currently %u degrees warmer in SF, and I'm a little confused." % delta
+    elif diff > 0:
+      phrase = "You'd be %u degrees warmer if you were in Oakland right now." % delta
+    else:
+      phrase = "Either Oakland is abnormally chilly, or I broke the app. It's probably the latter."
 
-content='''
+  except IOError:
+    phrase = "Where's my fucking file?"
+  except:
+    e = sys.exc_info()[0]
+    phrase = "I sincerely have no idea what's going on, but technically my SLA is 'Whenever I f*cking feel like it', so: %s" % e
+
+  content='''
 <html xmlns="http://www.w3.org/1999/xhtml" id="foo" class="bar">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -120,5 +125,5 @@ content='''
 </html>
 '''
 
-print(content % phrase)
+  print(content % phrase)
 
