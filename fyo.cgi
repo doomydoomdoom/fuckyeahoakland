@@ -5,15 +5,6 @@ import sys
 
 from pprint import pprint
 
-config = {
-  'key':'e651fd6cb0ba73daaf9cab6b6c643257',
-  'cities':{
-    'sanfrancisco':{'lat':37.7337,'lon':-122.4467},
-    'oakland':{'lat':37.8043,'lon':-122.2711},
-    'nope':{'lat':37.7780,'lon':-122.5004}
-  }
-}
-
 temp=dict()
 phrase=str()
 comment=str()
@@ -22,7 +13,6 @@ try:
   f = open('fuckyeahoakland.json','r')
   temp = json.load(f)
   f.close()
-  comment=str(temp)
 except IOError:
   e = sys.exc_info()[0]
   phrase = "I sincerely have no idea where my data is, but technically my SLA is 'Whenever I f*cking feel like it'"
@@ -57,6 +47,9 @@ content='''
   <h1>%s</h1>
 
   <!--
+    Oakland:		%f
+    Central SF:		%f
+    Outer Richmond:	%f
     %s
   -->
 
@@ -70,5 +63,5 @@ content='''
 </html>
 '''
 
-print(content % (phrase,comment) )
+print(content % (phrase,temp['oakland'],temp['sf'],temp['nope'],comment) )
 
