@@ -75,8 +75,8 @@ if diff < 0:
   print("Oakland:        %f" % temp['oakland'])
   print("Central SF:     %f" % temp['sf'])
   print("Outer Richmond: %f" % temp['nope'])
-
-f = open('fuckyeahoakland.json','w')
-json.dump(temp,f)
-f.close()
+else:
+  f = open('fuckyeahoakland.json','w')
+  json.dump(temp,f)
+  f.close()
 
