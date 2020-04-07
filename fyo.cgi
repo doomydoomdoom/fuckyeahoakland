@@ -5,13 +5,13 @@ import sys
 
 from pprint import pprint
 
-temp=dict()
+forecast=dict()
 phrase=str()
 comment=str()
 
 try:
   f = open('fuckyeahoakland.json','r')
-  temp = json.load(f)
+  forecast = json.load(f)
   f.close()
 except IOError:
   e = sys.exc_info()[0]
@@ -23,9 +23,9 @@ except:
   comment = "WTF? %s" % e
 
 try:
-  diff=round(temp['oakland']) - int(temp['sf'])
+  diff=round(forecast['oakland']['temp']) - int(forecast['sf']['temp'])
   if diff < 1:
-    diff=round(temp['oakland']) - int(temp['nope']) 
+    diff=round(forecast['oakland']['temp']) - int(forecast['nope']['temp']) 
 except KeyError:
   diff = 0
 
@@ -47,9 +47,6 @@ content='''
   <h1>%s</h1>
 
   <!--
-    Oakland:		%f
-    Central SF:		%f
-    Outer Richmond:	%f
     %s
   -->
 
@@ -63,5 +60,5 @@ content='''
 </html>
 '''
 
-print(content % (phrase,temp['oakland'],temp['sf'],temp['nope'],comment) )
+print(content % (phrase,comment))
 
