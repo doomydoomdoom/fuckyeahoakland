@@ -5,6 +5,7 @@ import sys
 import http.client
 
 from pprint import pprint
+from statistics import mean
 
 config = {
   'key':'e651fd6cb0ba73daaf9cab6b6c643257',
@@ -15,10 +16,10 @@ config = {
   }
 }
 
-temp = {
-  'oakland':0,
-  'sf':0,
-  'nope':0,
+forecast = {
+  'oakland':{},
+  'sf':{},
+  'nope':{},
 }
 
 for city in ('sf','oakland','nope'):
@@ -38,45 +39,48 @@ for city in ('sf','oakland','nope'):
         print('ERROR: Unparseable JSON')
         pprint(data)
         quit()
-      
+
       if int(ds_json['currently']['temperature']) > 0:
-        try:
-          type(ds_json)
-          f = open('%s.json' % city,'w')
-          #f.write(data)
-          json.dump(data,f)
-          f.close()
-          temp[city]=ds_json['currently']['temperature']
-        except:
-          print("ERROR:")
-          e = sys.exc_info()[0]
-          print(e)
-          quit()
+        f = open('%s.json' % city,'w')
+        json.dump(data,f)
+        f.close()
+
+        forecast[city]['temp'] = ds_json['currently']['temperature']
+        forecast[city]['feels_like'] = ds_json['currently']['apparentTemperature']
+        forecast[city]['avg'] = mean([
+          ds_json['daily']['data'][0]['temperatureLow'],
+          ds_json['daily']['data'][0]['temperatureHigh']
+        ])
       else:
-          print('ERROR: Bad JSON')
-          pprint(ds_json['currently'])
-          quit()
+        print('ERROR: Incorrect JSON')
+        pprint(ds_json['currently'])
     else:
       print('Bad Response: %i' % resp.status())
-      pprint(data)
-      quit()
-  except:
-    print('Failed Response: %i' % resp.status)
-    pprint(resp)
   finally:
     conn.close()
 
-diff=round(temp['oakland']) - int(temp['sf'])
-if diff < 0:
-  #BLATANT CHEATING... cherry-pick the coldest micro-climate
-  diff=round(temp['oakland']) - int(temp['nope'])
+
+diff = round(forecast['oakland']['temp'] - forecast['sf']['temp'])
 
 if diff < 0:
-  print("Oakland:        %f" % temp['oakland'])
-  print("Central SF:     %f" % temp['sf'])
-  print("Outer Richmond: %f" % temp['nope'])
+  #BLATANT CHEATING... cherry-pick the coldest micro-climate
+  diff = round(forecast['oakland']['temp'] - forecast['nope']['temp'])
+
+report = '''
+	FEELS	IS	AVG
+OAKLAND	%0.2f	%0.2f	%0.2f 
+SF-DT	%0.2f	%0.2f   %0.2f
+SF-OR	%0.2f	%0.2f   %0.2f
+'''
+
+if diff < 0:
+  print(report % (
+    forecast['oakland']['feels_like'],forecast['oakland']['temp'],forecast['oakland']['avg'],
+    forecast['sf']['feels_like'],forecast['sf']['temp'],forecast['sf']['avg'],
+    forecast['nope']['feels_like'],forecast['nope']['temp'],forecast['nope']['avg'],
+  ))
 else:
   f = open('fuckyeahoakland.json','w')
-  json.dump(temp,f)
+  json.dump(forecast,f)
   f.close()
 
