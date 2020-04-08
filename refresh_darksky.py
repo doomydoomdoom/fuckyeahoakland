@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import json
-import getopt
 import sys
-import http.client
 
-from pprint import pprint
-from statistics import mean
+from http.client import HTTPSConnection
+from pprint      import pprint
+from statistics  import mean
 
+report  = False
+publish = False
+forecast = {}
 config = {
   'key':'e651fd6cb0ba73daaf9cab6b6c643257',
   'cities':{
@@ -16,16 +18,26 @@ config = {
   }
 }
 
-forecast = {
-  'oakland':{},
-  'sf':{},
-  'nope':{},
-}
+try:
+  if sys.argv[1] == '--report':
+    report = True
+  elif sys.argv[1] == '--publish':
+    publish = True
+  else:
+    quit()
+except:
+  print("Usage: %s [--report|--publish]\n" % sys.argv[0])
+  quit() 
 
-for city in ('sf','oakland','nope'):
+for city in list(config['cities'].keys()):
+  forecast[city] = {
+    'temp':float(),
+    'feels_like':float(),
+    'avg':float(),
+  }
   uri = "/forecast/%s/%0.4f,%0.4f" % ( config['key'], config['cities'][city]['lat'], config['cities'][city]['lon'] )
 
-  conn = http.client.HTTPSConnection("api.darksky.net")
+  conn = HTTPSConnection("api.darksky.net")
   conn.request("GET",uri)
   resp = conn.getresponse()
   bytes=resp.read()
@@ -66,7 +78,7 @@ if diff < 0:
   #BLATANT CHEATING... cherry-pick the coldest micro-climate
   diff = round(forecast['oakland']['temp'] - forecast['nope']['temp'])
 
-report = '''
+tmpl = '''
 	FEELS	IS	AVG
 OAKLAND	%0.2f	%0.2f	%0.2f 
 SF-DT	%0.2f	%0.2f   %0.2f
@@ -74,12 +86,17 @@ SF-OR	%0.2f	%0.2f   %0.2f
 '''
 
 if diff < 0:
-  print(report % (
+  report  = True
+  publish = False
+
+if report:
+  print(tmpl % (
     forecast['oakland']['feels_like'],forecast['oakland']['temp'],forecast['oakland']['avg'],
     forecast['sf']['feels_like'],forecast['sf']['temp'],forecast['sf']['avg'],
     forecast['nope']['feels_like'],forecast['nope']['temp'],forecast['nope']['avg'],
   ))
-else:
+
+if publish:
   f = open('fuckyeahoakland.json','w')
   json.dump(forecast,f)
   f.close()
