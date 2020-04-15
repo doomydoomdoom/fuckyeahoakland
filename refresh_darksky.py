@@ -6,8 +6,8 @@ from http.client import HTTPSConnection
 from pprint      import pprint
 from statistics  import mean
 
-report  = False
-publish = False
+report   = False
+publish  = False
 forecast = {}
 config = {
   'key':'e651fd6cb0ba73daaf9cab6b6c643257',
@@ -71,30 +71,23 @@ for city in list(config['cities'].keys()):
   finally:
     conn.close()
 
+# Cherrypick the hell out of it.
+lies       = [int(forecast['sf']['temp']),int(forecast['sf']['feels_like']),int(forecast['sf']['avg'])]
+damn_lies  = [int(forecast['nope']['temp']),int(forecast['nope']['feels_like']),int(forecast['nope']['avg'])]
+statistics = sorted(lies + damn_lies)
 
-diff = round(forecast['oakland']['temp'] - forecast['sf']['temp'])
+# *SNRK*
+zero_blind_study = sorted([int(forecast['oakland']['temp']) + 1,int(forecast['oakland']['feels_like']) + 1,int(forecast['oakland']['avg'] + 1)])
 
-if diff < 0:
-  #BLATANT CHEATING... cherry-pick the coldest micro-climate
-  diff = round(forecast['oakland']['temp'] - forecast['nope']['temp'])
+forecast['min']=statistics[0]
+forecast['max']=zero_blind_study[0]
 
-tmpl = '''
-	FEELS	IS	AVG
-OAKLAND	%0.2f	%0.2f	%0.2f 
-SF-DT	%0.2f	%0.2f   %0.2f
-SF-OR	%0.2f	%0.2f   %0.2f
-'''
-
-if diff < 0:
+if forecast['min'] > forecast['max']:
   report  = True
   publish = False
 
 if report:
-  print(tmpl % (
-    forecast['oakland']['feels_like'],forecast['oakland']['temp'],forecast['oakland']['avg'],
-    forecast['sf']['feels_like'],forecast['sf']['temp'],forecast['sf']['avg'],
-    forecast['nope']['feels_like'],forecast['nope']['temp'],forecast['nope']['avg'],
-  ))
+  pprint(forecast)
 
 if publish:
   f = open('fuckyeahoakland.json','w')
