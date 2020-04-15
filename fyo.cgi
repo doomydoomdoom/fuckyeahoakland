@@ -1,33 +1,28 @@
 #!/usr/bin/env python3
 import json
-import getopt
 import sys
-
-from pprint import pprint
 
 forecast=dict()
 phrase=str()
-comment=str()
+comment=str('Insert easter egg here: X')
+diff=int(0)
 
+# Display-side error handling
 try:
   f = open('fuckyeahoakland.json','r')
   forecast = json.load(f)
   f.close()
 except IOError:
-  e = sys.exc_info()[0]
-  phrase = "I sincerely have no idea where my data is, but technically my SLA is 'Whenever I f*cking feel like it'"
-  comment = "Where's my fucking file? %s" % e
+  comment = "WTF? %s" % sys.exc_info()[0]
 except:
-  e = sys.exc_info()[0]
-  phrase = "I sincerely have no idea what's going on, but technically my SLA is 'Whenever I f*cking feel like it'."
-  comment = "WTF? %s" % e
+  comment = "WTF? %s" % sys.exc_info()[0]
 
+# Validation moved to cron, but we still need to fail gracefully.
 try:
-  diff=round(forecast['oakland']['temp']) - int(forecast['sf']['temp'])
-  if diff < 1:
-    diff=round(forecast['oakland']['temp']) - int(forecast['nope']['temp']) 
-except KeyError:
+  diff=round(forecast['max']) - int(forecast['min'])
+except:
   diff = 0
+# ...and if you can't faily gracefully, sarcastically candid works! ( YOLO )
 
 if diff >= 1:
   phrase = "You'd be %u degrees warmer if you were in Oakland right now." % abs(diff)
