@@ -11,6 +11,7 @@ from statistics  import mean
 start    = datetime.now().strftime('%Y%m%d%H%M%S')
 report   = False
 publish  = False
+rotate   = False
 forecast = {}
 
 config = {
@@ -44,11 +45,14 @@ try:
     report = True
   elif sys.argv[1] == '--publish':
     publish = True
+  elif sys.argv[1] == '--rotate':
+    print('TBD')
+    quit()
   else:
     quit()
 except:
-  print("Usage: %s [--report|--publish]\n" % sys.argv[0])
-  quit() 
+  print("Usage: %s [--report|--publish|--rotate]\n" % sys.argv[0])
+  quit()
 
 for city in list(config['cities'].keys()):
   forecast[city] = {
@@ -114,7 +118,10 @@ if publish:
   json.dump(forecast,f)
   f.write("\n")
   f.close()
+  #if rotate:
+  #  # Am I sure I don't want to just stick to logrotate.d???
 # TBD: --report should parse *this* file and actually contextualize some shit.
+
 
 if forecast['min'] > forecast['max']:
   report  = True
@@ -128,7 +135,9 @@ if publish:
   json.dump(forecast,f)
   f.close()
 
-
+if rotate:
+  print("TBD")
+  quit()
 
 
 
