@@ -46,8 +46,20 @@ try:
   elif sys.argv[1] == '--publish':
     publish = True
   elif sys.argv[1] == '--rotate':
-    print('TBD')
+    # This will probably be on AWS before this feature is even necessary.
     quit()
+    try:
+      import os
+      x = os.stat('fuckyeahhistoricaldata.json')
+      y  = os.stat('oakland.json')
+      print('Current working directory: %s' % os.getcwd())
+      print('Size of historical data: %s' % x.st_size)
+      print('Freshness of current data: %f seconds' % ( x.st_mtime - y.st_mtime ))
+      print('Age of current data: %f hours' % ( y.st_mtime / 60 / 60 ))
+    except:
+      print(sys.exc_info())
+
+
   else:
     quit()
 except:
@@ -118,10 +130,7 @@ if publish:
   json.dump(forecast,f)
   f.write("\n")
   f.close()
-  #if rotate:
-  #  # Am I sure I don't want to just stick to logrotate.d???
-# TBD: --report should parse *this* file and actually contextualize some shit.
-
+  # TBD: --report should parse *this* file and actually contextualize some shit.
 
 if forecast['min'] > forecast['max']:
   report  = True
@@ -134,10 +143,4 @@ if publish:
   f = open('fuckyeahoakland.json','w')
   json.dump(forecast,f)
   f.close()
-
-if rotate:
-  print("TBD")
-  quit()
-
-
 
